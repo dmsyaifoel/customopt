@@ -73,6 +73,17 @@ def line_search(f, fgrad, x0, atol=1e-6, innertol=1e-3, maxloop=1000):
     fx0, gx0 = fxn, gxn
   return xn, 'maxloop'
 
+def root(f, fgrad, x0, atol=1e-6, maxloop=1000):
+  # WIP
+  x0 = list(x0)
+  dim = len(x0)
+  xn = dim*[0]
+  fx0, gx0 = fgrad(x0)
+  for i in range(maxloop):
+    x0 -= gx0/(gx0.dot(gx0)) + fx0
+  return x0
+    
+
 if __name__ == '__main__':
   def f(x):
     return (x[0] - 7)**2 + (x[1] - 3)**2
