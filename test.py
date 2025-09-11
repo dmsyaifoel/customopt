@@ -13,20 +13,20 @@ def rosen(x, n=5):
 
 if __name__ == '__main__':
 
-  # interval arithmetic to predict optimum value within given bounds (for gradient_descent_root)
+  print('interval arithmetic to predict optimum value within given bounds (for gradient_descent_root)')
 
   from interval import *
 
   x = interlist((-10, 10), 2)
-  print(beale(x))
-  print(booth(x))
+  print('beale min', beale(x)[0])
+  print('booth min', booth(x)[0])
   x = interlist((-10, 10), 5)
-  print(rosen(x))
+  print('rosen min', rosen(x)[0])
   print()
 
   from opt import *
 
-  # finite differences
+  print('finite differences')
 
   def fgrad(x):
     return beale(x), gradient(beale, x)
@@ -52,7 +52,7 @@ if __name__ == '__main__':
   print(f'{line_search(fgrad, [0]*5) = }')
   print()
 
-  # automatic differentiation
+  print('automatic differentiation')
 
   from sym import *
 

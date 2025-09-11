@@ -11,6 +11,12 @@ class Interval:
     else:
       self.max_val = float(max_val)
 
+  def __getitem__(self, i):
+    if i == 0:
+      return self.min_val
+    if i == 1:
+      return self.max_val
+
   def __add__(self, other):
     if not isinstance(other, Interval):
       other = Interval(other)
