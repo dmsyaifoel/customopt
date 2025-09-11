@@ -1,26 +1,3 @@
-import math
-
-def isconst(x):
-  return isinstance(x, (int, float))
-
-def zeros(n):
-  return n*[0]
-
-def sin(x):
-  if isconst(x):
-    return math.sin(x)
-  return x.sin()
-
-def cos(x):
-  if isconst(x):
-    return math.cos(x)
-  return x.cos()
-
-def acos(x):
-  if isconst(x):
-    return math.acos(x)
-  return x.acos()
-
 class Matrix:
   '''
   A simple matrix implementation that can deal with custom datatypes (intended for the Sym class).
@@ -86,8 +63,16 @@ def matrix(l):
   return Matrix(l)
 
 if __name__ == '__main__':
+
+
   A = matrix([[1, 2],
               [3, 4]])
-  b = matrix([5,
-              6])
-  print((A.T() @ b).norm())
+  b = matrix([[5],
+              [6]])
+
+  print(A@b)
+
+  c = matrix([7,
+              8])
+
+  print((A.T() @ (b-c)).norm())

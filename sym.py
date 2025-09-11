@@ -1,10 +1,10 @@
 import math
-from matrix import isconst
-from interval import Interval
-import interval
 
 def zeros(n):
   return n*[0]
+
+def isconst(x):
+  return isinstance(x, (int, float))
 
 class Sym:
   '''
@@ -12,7 +12,6 @@ class Sym:
   '''
   def __init__(self, name, bounds=None):
     self.name = name
-    self.interval_val = Interval(*bounds) if bounds else None
     self.key = id(self)
 
   def __repr__(self):
@@ -32,7 +31,7 @@ class Sym:
     return Add([self, other], 0)
 
   def __radd__(self, other):
-    return self + (other)
+    return self + other
 
   def __mul__(self, other):
     if other == 1:
@@ -50,7 +49,7 @@ class Sym:
     return Mul([self, other], 1)
 
   def __rmul__(self, other):
-    return self*(other)
+    return self*other
 
   def __neg__(self):
     return self*(-1)
@@ -109,10 +108,9 @@ class Sym:
     cache[self.key] = (val, grad)
     return val, grad
 
-  def interval(self):
-    if self.interval_val is None:
-      raise ValueError(f"No bounds for variable {self.name}")
-    return self.interval_val
+  def vg(self, dic):
+    dic, n = parsedic(dic)
+    return self.valgrad(dic, n, {})
 
 class Add(Sym):
   def __init__(self, l, c):
@@ -146,11 +144,6 @@ class Add(Sym):
         grad[i] += g_[i]
     cache[self.key] = (val, grad)
     return val, grad
-
-  def interval(self):
-    acc = Interval(self.c)
-    for l_ in self.l: acc += l_.interval()
-    return acc
 
 class Mul(Sym):
   def __init__(self, l, c):
@@ -193,11 +186,6 @@ class Mul(Sym):
         grad[i] += grads[k][i]*prod
     cache[self.key] = (val, grad)
     return val, grad
-
-  def interval(self):
-    acc = Interval(self.c)
-    for l_ in self.l: acc *= l_.interval()
-    return acc
 
 class Pow(Sym):
   def __init__(self, a, b):
@@ -243,9 +231,6 @@ class Sin(Sym):
     cache[self.key] = (val, grad)
     return val, grad
 
-  def interval(self):
-    return interval.sin(self.a.interval())
-
 class Cos(Sym):
   def __init__(self, a):
     self.a = a
@@ -265,9 +250,6 @@ class Cos(Sym):
     grad = [-math.sin(va)*ga[i] for i in range(n)]
     cache[self.key] = (val, grad)
     return val, grad
-
-  def interval(self):
-    return interval.cos(self.a.interval())
 
 class Acos(Sym):
   def __init__(self, a):
@@ -301,9 +283,14 @@ class Acos(Sym):
     cache[key] = (val, grad)
     return val, grad
 
-  def interval(self):
-    return interval.acos(self.a.interval())
+def sin(x):
+  return Sin(x)
 
+def cos(x):
+  return Cos(x)
+
+def acos(x):
+  return Acos(x)
 
 def syms(s, bounds=None):
   names = s.replace(' ', '').split(',')
@@ -311,37 +298,52 @@ def syms(s, bounds=None):
   assert len(bounds) == len(names)
   return [Sym(name, bounds[i]) for i, name in enumerate(names)]
 
+def symlist(name, n):
+  return [Sym(name + str(j)) for j in range(n)]
 
-def symlist(name, n=None, bounds=None):
-  if bounds is None:
-    return [Sym(name + str(j)) for j in range(n)]
-  if isconst(bounds[0]):
-    return [Sym(name + str(j), bounds) for j in range(n)]
-  return [Sym(name + str(j), bounds[j]) for j in range(len(bounds))]
-
-def parsedic(dic):
+def parsedic(dic_):
   '''
   Turns a dictionary containing symlists into a dictionary of individual syms
   and adds the 'map' dictionary to speed up lookups
   '''
+  dic = dict()
+  for key, item in dic_.items():
+    dic[str(key)] = item
   dic2 = dict()
   dic3 = dict()
   for key, item in dic.items():
     if not isinstance(item, (list, tuple)):
       dic2[key] = item
+      n = len(dic)
     else:
       item = [float(i) for i in item]
-      for i in range(len(item)):
+      n = len(item)
+      for i in range(n):
         dic2[key + str(i)] = item[i]
         dic3[key + str(i)] = i
   if len(dic3) == 0:
     dic3 = {name: idx for idx, name in enumerate(dic.keys())}
   dic2['map'] = dic3
-  return dic2
+  return dic2, n
 
 if __name__ == '__main__':
-  def f(x):
-    return (x[0] - 7)**2 + (x[1] - 3)**2
+  a, b, c, d, e = syms('a, b, c, d, e')
+  f = a+b-c*d/e + a**2 + sin(a) + cos(b) - acos(e)
+  print(f'{f = }')
+  print(f'{f.vg({a:1, b:2, c:-3, d:34, e:25}) = }')
 
-  def fgrad(x):
-    return f(x), 2*x[0] + 2*x[1]
+  s = symlist('s', 5)
+  print(f'{s = }')
+  from matrix import matrix
+  sm = matrix(s)
+
+  A = matrix([[1, 2, 3, 4, 5],
+              [2, 5, 6, 2, 3],
+              [4, 6, 2, 3, 5],
+              [7, 2, 5, 2, 3],
+              [6, 1, 5, 3, 2]])
+
+  b = A@sm
+  t = (b.T()@b)[0]
+  print(f'{t = }')
+  print(f'{t.vg({'s':(1, 2, 3, 4, 5)}) = }')
