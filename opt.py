@@ -2,11 +2,28 @@
 Custom optimization functions for use with custom objects
 '''
 
+def root_bisection(f, a, b, atol=1e-6, maxloop=1000):
+  assert a < b
+  fa = f(a)
+  fb = f(b)
+  assert fa*fb < 0
+  for i in range(maxloop):
+    c = (a + b)/2
+    fc = f(c)
+    if abs(fc) < atol: return c, i
+    if fa*fc < 0:
+      b = c
+      fb = f(b)
+    else:
+      a = c
+      fa = f(a)
+  return c, 'maxloop'
+  
 def deriv(f, x, dx=1e-6):
   # first derivative using central finite difference
   return (f(x + dx) - f(x - dx))/2/dx
 
-def root_scalar(f, x0=0, atol=1e-6, maxloop=1000, divtol=1e-50):
+def root_newton(f, x0=0, atol=1e-6, maxloop=1000, divtol=1e-50):
   # find the root of a scalar function using the newton's algorithm
   xn = 0
   fx0, d = f(x0), deriv(f, x0)
@@ -30,7 +47,7 @@ def derivs(f, x, dx=1e-6):
   fm = f(x - dx)
   return  fc, (fp - fm)/2/dx, (fp - 2*fc + fm)/dx**2
 
-def minimize_scalar(f, x0=0, atol=1e-6, maxloop=1000, divtol=1e-50):
+def minimize_newton(f, x0=0, atol=1e-6, maxloop=1000, divtol=1e-50):
   # find the minimum of a scalar using newton's algorithm
   xn = 0
   fx0, d1, d2 = derivs(f, x0)
@@ -96,7 +113,7 @@ def line_search(fgrad, x0, atol=1e-6, innertol=1e-6, maxloop=1000):
   for i in range(maxloop):
     xt = lambda t: [x0[j] + gx0[j]*t for j in range(dim)]
     func = lambda t: fgrad(xt(t))[0]
-    tn, dummy = minimize_scalar(func, 0, innertol)
+    tn, dummy = minimize_newton(func, 0, innertol)
     xn = xt(tn)
     fxn, gxn = fgrad(xn)
     if abs(fxn - fx0) < atol: return xn, i
@@ -109,11 +126,12 @@ if __name__ == '__main__':
   def fs(x):
     return 2*x**2 - 6*x - 9
 
+  print(f'{root_bisection(fs, -5, 0) = }')
   print(f'{deriv(fs, 3) = }')
-  print(f'{root_scalar(fs) = }')
+  print(f'{root_newton(fs) = }')
   print(f'{deriv2(fs, 3) = }')
   print(f'{derivs(fs, 3) = }')
-  print(f'{minimize_scalar(fs) = }')
+  print(f'{minimize_newton(fs) = }')
 
 
   def fv(x):
