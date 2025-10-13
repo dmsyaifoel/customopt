@@ -1,4 +1,12 @@
-import math
+pi = 3.141592653589793
+
+def sin_(x):
+  x = (x - pi)%(2*pi) - pi
+  return x - x**3/6 + x**5/120 - x**7/5040 + x**9/362880
+
+def cos_(x):
+  x = (x - pi)%(2*pi) - pi
+  return 1 - x**2/2 + x**4/24 - x**6/720 + x**8/40320 - x**10/3628800
 
 class Interval:
   '''
@@ -142,25 +150,25 @@ class Interval:
     return f'{self.l()}'
 
 def sin(x):
-  if x.max_val - x.min_val >= 2*math.pi:
+  if x.max_val - x.min_val >= 2*pi:
     new_min = -1
     new_max = 1
   else:
-    val1 = math.sin(x.min_val)
-    val2 = math.sin(x.max_val)
+    val1 = sin(x.min_val)
+    val2 = sin(x.max_val)
 
     temp_min = min(val1, val2)
     temp_max = max(val1, val2)
 
-    k_start = int(math.floor(x.min_val/(math.pi/2)))
-    k_end = int(math.ceil(x.max_val/(math.pi/2)))
+    k_start = int(floor(x.min_val/(pi/2)))
+    k_end = int(ceil(x.max_val/(pi/2)))
 
     for k in range(k_start, k_end + 1):
-      crit_point_val = k*(math.pi/2)
+      crit_point_val = k*(pi/2)
       if x.min_val <= crit_point_val <= x.max_val:
-        if math.sin(crit_point_val) == 1:
+        if sin(crit_point_val) == 1:
           temp_max = 1
-        elif math.sin(crit_point_val) == -1:
+        elif sin(crit_point_val) == -1:
           temp_min = -1
 
     new_min = temp_min
@@ -169,25 +177,25 @@ def sin(x):
   return Interval(new_min, new_max)
 
 def cos(x):
-  if x.max_val - x.min_val >= 2*math.pi:
+  if x.max_val - x.min_val >= 2*pi:
     new_min = -1
     new_max = 1
   else:
-    val1 = math.cos(x.min_val)
-    val2 = math.cos(x.max_val)
+    val1 = cos(x.min_val)
+    val2 = cos(x.max_val)
 
     temp_min = min(val1, val2)
     temp_max = max(val1, val2)
 
-    k_start = int(math.floor(x.min_val/(math.pi/2)))
-    k_end = int(math.ceil(x.max_val/(math.pi/2)))
+    k_start = int(x.min_val/(pi/2))
+    k_end = int(x.max_val/(pi/2)) + 1
 
     for k in range(k_start, k_end + 1):
-      crit_point_val = k*(math.pi/2)
+      crit_point_val = k*(pi/2)
       if x.min_val <= crit_point_val <= x.max_val:
-        if math.cos(crit_point_val) == 1:
+        if cos(crit_point_val) == 1:
           temp_max = 1
-        elif math.cos(crit_point_val) == -1:
+        elif cos(crit_point_val) == -1:
           temp_min = -1
 
     new_min = temp_min
@@ -197,8 +205,8 @@ def cos(x):
 
 def acos(x):
   assert x.min_val > -1 and x.max_val < 1
-  new_min = math.acos(x.max_val)
-  new_max = math.acos(x.min_val)
+  new_min = acos(x.max_val)
+  new_max = acos(x.min_val)
   return Interval(new_min, new_max)
 
 def interlist(bounds, n=None):
