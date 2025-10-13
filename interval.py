@@ -1,12 +1,4 @@
-pi = 3.141592653589793
-
-def sin_(x):
-  x = (x - pi)%(2*pi) - pi
-  return x - x**3/6 + x**5/120 - x**7/5040 + x**9/362880
-
-def cos_(x):
-  x = (x - pi)%(2*pi) - pi
-  return 1 - x**2/2 + x**4/24 - x**6/720 + x**8/40320 - x**10/3628800
+from functions import sin, cos, pi
 
 class Interval:
   '''
